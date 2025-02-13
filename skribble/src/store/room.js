@@ -1,7 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit"
 const roomSlice=createSlice({
     name:"Room",
-    initialState:{room:{},roomId:"",profile:{}},
+    initialState:{room:{},roomId:"",profile:{},word:""},
     reducers:{
         setRoom:(state,action)=>{
             console.log(action.payload)
@@ -12,6 +12,9 @@ const roomSlice=createSlice({
         },
         setUsers:(state,action)=>{
             return {...state,room:action.payload}
+        },
+        setWord:(state,action)=>{
+            return {...state,word:action.payload}
         }
     }
 })

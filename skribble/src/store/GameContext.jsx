@@ -5,9 +5,11 @@ import { useDispatch } from "react-redux";
 import{notify} from "../Pages/Initial"
 import Select from "../components/Select";
 import { wordActions } from "./words";
+import { useNavigate } from "react-router-dom";
 const GameContextWrapper=({children})=>{
     const dis=useDispatch();
     const socket=useContext(SocketContext);
+    const nav=useNavigate();
     useEffect(() => {
             if (socket) {
                 socket.on("userJoined", (data) => {
@@ -30,8 +32,14 @@ const GameContextWrapper=({children})=>{
                 });
                 socket.on("NaaIshtam",(data)=>{
                     dis(wordActions.removeWords());
-                    console.log(data.data);
                 });
+                socket.on("setWord",(data)=>{
+                    dis(roomActions.setWord(data.data));
+                });
+                socket.on("gameStarted",(data)=>{
+                    dis(roomActions.setUsers(data.room));
+                    nav("/AataAarambam");
+                })
             }
             return () => {
                 if (socket) {
@@ -40,6 +48,7 @@ const GameContextWrapper=({children})=>{
                     socket.off("settingsChange");
                     socket.off("Enchuko");
                     socket.off("NaaIshtam");
+                    socket.off("gameStarted");
                 }
             };
         }, [socket]);

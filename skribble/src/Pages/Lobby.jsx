@@ -6,19 +6,14 @@ import { roomActions } from "../store/room";
 import Card from "../components/Card";
 import Msg from "../components/Msg";
 import { useNavigate } from "react-router-dom";
+import Inbox from "../components/Inbox";
 const Lobby=()=>{
-    const [msg,setMsg]=useState("");
     const dis=useDispatch();
     const nav=useNavigate();
     const socket=useContext(SocketContext);
     const room=useSelector(store=>store.room); 
     const [inbox,setInbox]=useState([]);
     const [copied,setCopy]=useState(false);
-    const messagesEndRef = useRef(null);
-    useEffect(() => {
-        scrollToBottom();
-    }, [inbox]);
-
     const handleCopy=()=>{
         navigator.clipboard.writeText(room.roomId).then(
             ()=>{
@@ -27,20 +22,12 @@ const Lobby=()=>{
             }
         ).catch((e)=>console.log(e));
     };
-    const scrollToBottom = () => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    };
     useEffect(()=>{
         if(socket){
             socket.on("recieveMessage",(salaar)=>{
+                console.log(salaar)
                 setInbox((prevInbox) => [...prevInbox, salaar]);
             });
-            socket.on("gameStarted",(data)=>{
-                dis(roomActions.setUsers(data.room));
-                nav("/AataAarambam");
-            })
         };
         return ()=>{
             if(socket)
@@ -53,7 +40,7 @@ const Lobby=()=>{
                 <div className="w-full p-5 h-full gap-1 justify-between items-center flex">
                     {
                         <div className="custom-scrollbar overflow-y-auto break-words rounded w-[25%] h-full flex flex-col gap-1">
-                        {room?.room?.users?.map((e,i)=>{
+                        {room?.room?.users&&Object.values(room?.room?.users).map((e,i)=>{
                             return <Card you={room.profile?.id} key={i} id={e.id} index={i}>{e.userName}</Card>
                         })}
                         </div>
@@ -148,36 +135,7 @@ const Lobby=()=>{
                 </button>
                 </div>
                 </div>
-                <div className="w-[25%] h-full p-2 rounded">
-                    <div className="bg-gray-400 w-full h-full rounded relative p-0">
-                        <div className="h-[92%] overflow-y-auto custom-scrollbar p-2">
-                        {inbox.length > 0 ? 
-    inbox.map((e, i) => (
-        <Msg key={i} username={e.sentBy} msg={e.message} />
-    )) : null
-}
-<div ref={messagesEndRef} />
-                        </div>
-                        <div className="flex absolute bottom-0 w-[98%] m-1 h-[8%]">  
-                        <input onKeyDown={(e)=>{
-                            if(e.key==="Enter"&&msg.trim().length){
-                                if(socket){
-                                    socket.emit("sendMessage",{roomId:room.roomId,message:{sentBy:room.profile.userName,message:msg}});
-                                    setMsg("");
-                                }
-                            }
-                        }} value={msg} onChange={(e)=>{setMsg(e.target.value)}} type="text" className="flex w-[80%]  rounded-l left-0 bg-white placeholder:text-xs p-1 outline-none" placeholder="Type your guess here..."></input>
-                        <div className="flex justify-center w-[20%] items-center bg-white  p-1 rounded-r">
-                        <button onClick={(e)=>{
-                            if(socket&&msg.trim().length){
-                                socket.emit("sendMessage",{roomId:room.roomId,message:{sentBy:room.profile.username,message:msg}});
-                                setMsg("");
-                            }
-                        }} className="bg-blue-400 rounded p-1 text-white font-semibold">Send</button>
-                        </div>
-                        </div>
-                    </div>
-                </div>
+                <Inbox inbox={inbox} event={"Message"} socket={socket}></Inbox>
                 </div>
             </div>
         </>

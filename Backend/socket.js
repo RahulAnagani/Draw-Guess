@@ -24,10 +24,12 @@ module.exports.initializeSocket=(server)=>{
         })
         socket.on("createRoom",(salaar)=>roomController.createRoom(salaar,socket));
         socket.on("joinRoom",(Mannar)=>roomController.joinRoom(Mannar,socket,io));
-        socket.on("sendMessage",(kissik)=>{gameController.sendMessage(kissik,io,socket)})
+        socket.on("sendMessage",(kissik)=>{gameController.sendMessage(kissik,socket,io)})
+        socket.on("sendGuess",(kissik)=>{gameController.guess({socket,roomId:kissik.roomId,padam:kissik.message.padam,io})})
         socket.on("disconnect",()=>roomController.exitRoom(socket,io));
         socket.on("settingsChange",(data)=>gameController.changeSettings(data,socket,io))
         socket.on("startGame",(data)=>{gameController.startGame({roomId:data.roomId,socket,io})});
-        socket.on("wordChoosen",(data)=>{gameController.wordChoosen({socket,io,roomId:data.roomId,padam:data.padam})})
+        socket.on("wordChoosen",(data)=>{gameController.wordChoosen({socket,roomId:data.roomId,padam:data.padam,io})})
     })
 }
+

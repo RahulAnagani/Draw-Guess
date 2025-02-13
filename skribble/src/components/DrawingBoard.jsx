@@ -4,6 +4,7 @@ import { SocketContext } from "../store/SocketProvider";
 import { useDispatch, useSelector } from "react-redux";
 import { roomActions } from "../store/room";
 import Select from "./Select";
+import Inbox from "./Inbox";
 
 const DrawingBoard = () => {
     const dis = useDispatch();
@@ -13,7 +14,23 @@ const DrawingBoard = () => {
     const [color,setColor]=useState("#000000");
     const socket = useContext(SocketContext);
     const words=useSelector(store=>store.words);
+    const [inbox,setInbox]=useState([])
     const [lineWidth,setLineWidth]=useState(3);
+    const word="Rahul"
+    useEffect(()=>{
+        if(socket){
+            socket.on("Cheppadu",(salaar)=>{
+                setInbox((prevInbox) => [...prevInbox,salaar]);
+            });
+            socket.on("CheppalaniAnukunnadu",(salaar)=>{
+                setInbox((prevInbox) => [...prevInbox, salaar]);
+            });
+        };
+        return ()=>{
+            if(socket)
+            socket.off("recieveMessage");
+        }
+    },[socket])
     const getPosition = (evt) => {
         const rect = canvasRef.current.getBoundingClientRect();
         let x, y;
@@ -115,7 +132,28 @@ const DrawingBoard = () => {
 
     return (
         <>
-        {words.length>0?<Select array={words}></Select>:<></>}<div className="w-screen h-screen flex justify-center items-center">
+        {words.length>0?<Select array={words}></Select>:<></>}<div className=" w-screen h-screen flex justify-center items-center">
+            <div className=" h-full gap-5 flex flex-col items-center justify-center w-[60%] ">
+                <div className="flex gap-0.5 items-center relative justify-center">
+                {
+                    room.word.split(" ").map((f,i)=>{
+                        return f.split("").map((e,i)=>{
+                            if(e=='_'){
+                                if(i===f.length-1)
+                                return <h1 className=" rounded border-black  p-0.5 font-extrabold text-xl">{e}{i+1}</h1>
+                                else 
+                                return <h1 className=" rounded border-black  p-0.5 font-extrabold text-xl">{e}</h1>
+                            }
+                            else if(i===f.length-1){
+                                return <h1 className=" rounded border-black  p-0 font-semibold">{e}&nbsp;&nbsp; </h1>
+                            }
+                            else{
+                            return <h1 className=" rounded border-black  p-0 font-semibold">{e}</h1>
+                        }
+                        })
+                    })
+                }
+                </div>
             <canvas
                 ref={canvasRef}
                 width={"400px"}
@@ -130,7 +168,7 @@ const DrawingBoard = () => {
                 onTouchEnd={stopDraw}
                 >
             </canvas>
-            <div className="flex flex-col gap-1 items-center justify-center">
+            <div className="flex gap-3 items-center justify-center">
             <input
              type="color" placeholder="Pick a Color" onChange={(e)=>{setColor(e.target.value)}}></input>
             <button onClick={clearCanvas}>
@@ -143,6 +181,8 @@ const DrawingBoard = () => {
                 <option value={70} className="text-2xl">Bold</option>
             </select>
             </div>
+                    </div>
+            <Inbox event={"Guess"} socket={socket} inbox={inbox}></Inbox>
         </div>
     </>
     );

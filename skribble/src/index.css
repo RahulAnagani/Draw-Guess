@@ -57,7 +57,7 @@ button{
     border-radius: 0.5rem;
     border: none;
     padding: 0.5rem 0;
-    color: rgba(51, 65, 85, 1);
+    color: rgb(0, 0, 0);
     font-weight: 500;
     transition: all 0.15s ease-in-out;
   }

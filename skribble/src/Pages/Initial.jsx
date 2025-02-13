@@ -69,7 +69,7 @@ const CreateRoom=()=>{
             <h1>Join a room?</h1>
             <input value={roomId} onChange={(e)=>setroomId(e.target.value)} className="bg-gray-400 placeholder:text-gray-600 text-black p-2 rounded-xl" placeholder="Enter roomId"></input>
             <button onClick={(e)=>{
-                if(socket&&roomId.trim().length){
+                if(socket&&roomId.trim()&&name.trim().length>3){
                     socket.emit("joinRoom",{userName:name,roomId:roomId});
                     socket.on("success",(data)=>{
                         dis(roomActions.setRoom({room:data.room,roomId:roomId}));
@@ -77,24 +77,30 @@ const CreateRoom=()=>{
                         nav(`/room/${roomId}`);
                     })          
                 }
+                else{
                 if(!(name.trim().length>3)){
                     notify("User Name")
                 }
                 if(!roomId.trim().length){
                     notify("room Id");
-                }
+                }}
             }} className="bg-white cursor-pointer font-medium active:bg-gray-300 text-black rounded p-1 w-[50%]">Join</button>
             </div>
             <hr></hr>
             <button 
                 onClick={(e)=>{
-                    if(socket){
+                    if(socket&&name.trim().length>3){
                         socket.emit("createRoom",{userName:name});
                         socket.on("roomCreated",(data)=>{
                             dis(roomActions.setRoom({roomId:data.roomId,room:data.room}));
                             dis(roomActions.setProfile({profile:data.profile}));
                             nav(`/room/${data.roomId}`);
                         })
+                    }
+                    else{
+                      if(!(name.trim().length>3)){
+                        notify("User Name")
+                    }
                     }
                 }}
                 className="bg-white text-black font-extrabold cursor-pointer p-3 rounded">Create Room</button>
