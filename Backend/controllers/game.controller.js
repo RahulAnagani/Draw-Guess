@@ -54,54 +54,55 @@ module.exports.sendMessage=(kissik,socket,io)=>{
 }
 
 module.exports.changeSettings=(Nibandhana,socket,io)=>{
-    const rooms=Territories.getRooms;
-    if(!rooms[Nibandhana.roomId]){
+    const room=Territories.getRooms[Nibandhana.roomId];
+    if(!room){
         socket.emit("error",{msg:"Room does'nt exist",status:false,thing:""});
     }
-    else if(rooms[Nibandhana.roomId].roomOwner.id!==socket.id){
+    else if(room.roomOwner.id!==socket.id){
         socket.emit("error",{msg:"Unable to make changes in the settings!",status:false});
     }
     else{
         switch(Nibandhana.settings?.type){
             case "Aatagaallu":
-                rooms[Nibandhana.roomId].settings.players=Nibandhana.settings.Enti;
+                room.settings.players=Nibandhana.settings.Enti;
                 break;
                 case "TIMING":
-                rooms[Nibandhana.roomId].settings.drawTime=Nibandhana.settings.Enti;
+                room.settings.drawTime=Nibandhana.settings.Enti;
                 break;
                 case "Aatalu":
-                    rooms[Nibandhana.roomId].settings.rounds=Nibandhana.settings.Enti;                    
+                    room.settings.rounds=Nibandhana.settings.Enti;                    
                     break;
         }
-        const {word,...room}=rooms[Nibandhana.roomId];
-        io.to(Nibandhana.roomId).emit("settingsChange",{room:room})
+        const {word,...rooma}=room;
+        io.to(Nibandhana.roomId).emit("settingsChange",{room:rooma})
     }
 }
 
 module.exports.startGame=({roomId,socket,io})=>{
-    const rooms=Territories.getRooms;
-    if(!rooms[roomId]){
-        socket.emit("error",{msg:"Room is not found",status:false,thing:"Room Error"});
-    }
-    else if(rooms[roomId].roomOwner.id!==socket.id){
-        socket.emit("error",{msg:"Cannot make decisions",status:false,thing:"OWNERSHIP"});
-    }
-    else if(Object.keys(rooms[roomId].users).length<2){
-        socket.emit("error",{msg:"Cannot start game with 1 player",status:false,thing:"Capacity"});
-    }
-    else{
-        rooms[roomId].presentState.gameState="started";
-        rooms[roomId].presentState.currentRound=1;
-        rooms[roomId].presentState.currentPlayer=0;
-        const {word,...room}=rooms[roomId];
-        io.to(roomId).emit("gameStarted",{room:room});
-        startTurn(roomId,io)
-    }
-};
-module.exports.wordChoosen=({roomId,socket,padam,io})=>{
     const room=Territories.getRooms[roomId];
     if(!room){
         socket.emit("error",{msg:"Room is not found",status:false,thing:"Room Error"});
+    }
+    else if(room.roomOwner.id!==socket.id){
+        socket.emit("error",{msg:"Cannot make decisions",status:false,thing:"OWNERSHIP"});
+    }
+    else if(Object.keys(room.users).length<2){
+        socket.emit("error",{msg:"Cannot start game with 1 player",status:false,thing:"Capacity"});
+    }
+    else{
+        room.presentState.gameState="started";
+        room.presentState.currentRound=1;
+        room.presentState.currentPlayer=0;
+        const {word,...rooma}=room;
+        io.to(roomId).emit("gameStarted",{room:rooma});
+        startTurn(roomId,io)
+    }
+};
+
+module.exports.wordChoosen=({roomId,padam,io})=>{
+    const room=Territories.getRooms[roomId];
+    if(!room){
+        // socket.emit("error",{msg:"Room is not found",status:false,thing:"Room Error"});
     }
     else{
         const currPlayer=room.presentState.currentPlayer;
@@ -110,36 +111,51 @@ module.exports.wordChoosen=({roomId,socket,padam,io})=>{
             socket.emit("error",{msg:"Not your turn",status:false,thing:"Turn"});
         }
         else{
+            const currPlayer=room.presentState.currentPlayer;
+            const currentPlayer=getCurrentPlayer(roomId,currPlayer);
             clearTimeout(allTimers.get(roomId));
             allTimers.delete(roomId);
             room.presentState.gameState="drawing";
             room.word=padam.toLowerCase();
             const dashed=dashIt(padam);
-            socket.emit("setWord",{data:room.word});
-            io.except(pam.id).to(roomId).emit("setWord",{data:dashed});
+            const {word,...rooma}=room;
+            io.to(currentPlayer.id).emit("setWord",{data:room.word,room:rooma});
+            io.except(pam.id).to(roomId).emit("setWord",{data:dashed,room:rooma});
             const bro=setTimeout(()=>{
                     room.presentState.currentPlayer++;
                     startTurn(roomId,io);
             },room.settings.drawTime*1000);
-            // console.log(room.settings.drawTime)
         }
     }
 }
+const turnEnded=(roomId,io)=>{
+
+}
 const startTurn=(roomId,io)=>{
-    const rooms=Territories.getRooms;
-    if(!rooms[roomId]){
+    const room=Territories.getRooms[roomId];
+    if(!room){
         return;
     }
-    else if(Object.keys(rooms[roomId].users).length<2)return;
-    else{
-        const currPlayer=rooms[roomId].presentState.currentPlayer;
-        const currentPlayer=getCurrentPlayer(roomId,currPlayer);
+    else if(Object.keys(room.users).length<2)return;
+    else{  
+        if(room.presentState.currentPlayer+1>Object.keys(room.users).length){
+            room.presentState.currentRound++;
+            room.presentState.currentPlayer=0;
+        }
+        if(room.presentState.currentRound>room.settings.rounds){
+            io.to(roomId).emit("GameEnded",{data:"MG"});
+        }
+        const currentPlayer=getCurrentPlayer(roomId,room.presentState.currentPlayer);
         const words=getThreeWords();
+        console.log
         io.to(currentPlayer.id).emit("Enchuko",{data:words});
+        room.presentState.gameState="choosing";
+        const {word,...rooma}=room;
+        io.to(roomId).emit("settingsChange",{room:rooma});
         const hehe=setTimeout(()=>{
             const randomIndex = Math.floor(Math.random() * 3);
-            io.to(currentPlayer.id).emit("NaaIshtam",{data:words[randomIndex]});
-        },20000);
+            module.exports.wordChoosen({roomId,io,socket:currentPlayer.id,padam:words[randomIndex]})
+        },10000);
         allTimers.set(roomId,hehe);
     }
 };

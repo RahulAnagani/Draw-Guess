@@ -24,22 +24,28 @@ const GameContextWrapper=({children})=>{
                     console.log(data);
                 });
                 socket.on("settingsChange",(data)=>{
-                console.log(data.room.settings);
+                    console.log(data.room.settings);
                     dis(roomActions.setUsers(data.room))
                 });
                 socket.on("Enchuko",(data)=>{
+                    dis(roomActions.myTurn());
                     dis(wordActions.addWords(data.data));
                 });
                 socket.on("NaaIshtam",(data)=>{
                     dis(wordActions.removeWords());
+                    dis(roomActions.setWord(data.data));
                 });
                 socket.on("setWord",(data)=>{
+                    dis(wordActions.removeWords());
+                    console.log(data);
+                    dis(roomActions.setUsers(data.room));
                     dis(roomActions.setWord(data.data));
                 });
                 socket.on("gameStarted",(data)=>{
                     dis(roomActions.setUsers(data.room));
                     nav("/AataAarambam");
-                })
+                });
+
             }
             return () => {
                 if (socket) {

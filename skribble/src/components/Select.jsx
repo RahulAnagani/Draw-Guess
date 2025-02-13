@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { SocketContext } from "../store/SocketProvider";
 import { wordActions } from "../store/words";
+import { roomActions } from "../store/room";
 
 const Select = ({array}) => {
     const room = useSelector(store => store.room);

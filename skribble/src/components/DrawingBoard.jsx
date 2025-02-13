@@ -16,7 +16,7 @@ const DrawingBoard = () => {
     const words=useSelector(store=>store.words);
     const [inbox,setInbox]=useState([])
     const [lineWidth,setLineWidth]=useState(3);
-    const word="Rahul"
+    console.log(room)
     useEffect(()=>{
         if(socket){
             socket.on("Cheppadu",(salaar)=>{
@@ -27,10 +27,15 @@ const DrawingBoard = () => {
             });
         };
         return ()=>{
-            if(socket)
-            socket.off("recieveMessage");
+            if(socket){
+                socket.off("Cheppadu");
+                socket.off("CheppalaniAnukunnadu");
+            }
         }
     },[socket])
+    const getCurrentPlayer=()=>{
+        return room.room?.users[Object.keys(room.room.users)[room.room.presentState.currentPlayer]];
+    }
     const getPosition = (evt) => {
         const rect = canvasRef.current.getBoundingClientRect();
         let x, y;
@@ -43,7 +48,6 @@ const DrawingBoard = () => {
         }
         return { x, y };
     };
-
     useEffect(() => {
         if (!socket) return;
     
@@ -73,8 +77,6 @@ const DrawingBoard = () => {
             const ctx = canvas.getContext("2d");
             ctx.closePath();
         };
-    
-
         socket.on("startDrawing", startDrawHandler);
         socket.on("drawing", drawHandler);
         socket.on("stopDrawing", stopDrawHandler);
@@ -121,15 +123,13 @@ const DrawingBoard = () => {
             socket.emit("stopDrawing", {coords:{},roomId:room.roomId});
         }
     };
-
     const clearCanvas = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
-   
-
+    console.log(room);
     return (
         <>
         {words.length>0?<Select array={words}></Select>:<></>}<div className=" w-screen h-screen flex justify-center items-center">
@@ -154,11 +154,16 @@ const DrawingBoard = () => {
                     })
                 }
                 </div>
+            <div className="relative">
+                { 
+                (!(room.profile.id===getCurrentPlayer().id))&&room.room?.presentState?.gameState==="choosing"?
+                <h1 className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2"><span className="font-extrabold">{getCurrentPlayer().userName}</span> is choosing a word</h1>:<></>
+                }
             <canvas
                 ref={canvasRef}
                 width={"400px"}
                 height={"400px"}
-                className="border border-black"
+                className={`border border-black `}
                 onMouseDown={startDraw}
                 onMouseMove={draw}
                 onMouseUp={stopDraw}
@@ -168,6 +173,7 @@ const DrawingBoard = () => {
                 onTouchEnd={stopDraw}
                 >
             </canvas>
+            </div>
             <div className="flex gap-3 items-center justify-center">
             <input
              type="color" placeholder="Pick a Color" onChange={(e)=>{setColor(e.target.value)}}></input>
