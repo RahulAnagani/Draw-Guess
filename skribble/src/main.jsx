@@ -11,6 +11,7 @@ import Initial from './Pages/Initial.jsx';
 import Lobby from './Pages/Lobby.jsx';
 import GameContextWrapper from './store/GameContext.jsx';
 import Select from './components/Select.jsx';
+import Timer from './components/Timer.jsx';
 const router=createBrowserRouter([
   {
     path:"/",
@@ -31,7 +32,7 @@ const router=createBrowserRouter([
       },
       {
         path:"/testing",
-        element:<Select></Select>
+        element:<Timer></Timer>
       }
     ]
   }

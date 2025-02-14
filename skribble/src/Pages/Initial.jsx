@@ -5,6 +5,7 @@ import {useDispatch, useSelector} from "react-redux"
 import { roomActions } from "../store/room";
 import { ToastContainer, toast } from "react-toastify";
 import cx from "clsx"
+import Scorpio from "../components/Scorpio";
 function CustomNotification({ closeToast, data, toastProps }) {
     const isColored = toastProps.theme === "colored";
   
@@ -56,18 +57,21 @@ const CreateRoom=()=>{
     return (
         <>
         <ToastContainer />
-        <div className="w-screen h-screen bg-red-900 flex items-center justify-center">
+        <div className="w-screen h-screen bg-gradient-to-r from-blue-500 to-green-500 relative  flex items-center justify-center">
+            <div className="absolute top-2 left-2">
+            <Scorpio></Scorpio> 
+            </div>
              <form onSubmit={(e)=>{
                 e.preventDefault()
             }}>
-            <div className="border flex flex-col gap-5 border-transparent bg-black text-white p-10">
+            <div className="border flex flex-col gap-5 border-transparent bg-gradient-to-br from-yellow-200 to-pink-400 rounded-lg text-white p-10">
             <label className="flex flex-col gap-1">
             Enter Your Name
-            <input value={name} onChange={(e)=>setName(e.target.value)} required className="bg-gray-400 placeholder:text-gray-600 text-black p-2 rounded-xl" placeholder="Enter your name"></input>
+            <input value={name} onChange={(e)=>setName(e.target.value)} required className="bg-gray-100 placeholder:text-gray-600 text-black p-2 rounded outline-0" placeholder="Enter your name"></input>
             </label>
             <div className="flex flex-col items-start justify-center gap-2">
             <h1>Join a room?</h1>
-            <input value={roomId} onChange={(e)=>setroomId(e.target.value)} className="bg-gray-400 placeholder:text-gray-600 text-black p-2 rounded-xl" placeholder="Enter roomId"></input>
+            <input value={roomId} onChange={(e)=>setroomId(e.target.value)} className="bg-gray-100 placeholder:text-gray-600 text-black p-2 rounded outline-0" placeholder="Enter roomId"></input>
             <button onClick={(e)=>{
                 if(socket&&roomId.trim()&&name.trim().length>3){
                     socket.emit("joinRoom",{userName:name,roomId:roomId});
@@ -84,7 +88,7 @@ const CreateRoom=()=>{
                 if(!roomId.trim().length){
                     notify("room Id");
                 }}
-            }} className="bg-white cursor-pointer font-medium active:bg-gray-300 text-black rounded p-1 w-[50%]">Join</button>
+            }} className="bg-white m-0.5 cursor-pointer font-medium active:bg-gray-300 text-black rounded p-1 w-[50%]">Join</button>
             </div>
             <hr></hr>
             <button 

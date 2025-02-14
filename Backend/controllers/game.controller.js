@@ -147,7 +147,7 @@ const startTurn=(roomId,io)=>{
         }
         const currentPlayer=getCurrentPlayer(roomId,room.presentState.currentPlayer);
         const words=getThreeWords();
-        console.log
+        const targetTime=Date.now()+30000
         io.to(currentPlayer.id).emit("Enchuko",{data:words});
         room.presentState.gameState="choosing";
         const {word,...rooma}=room;
@@ -155,7 +155,7 @@ const startTurn=(roomId,io)=>{
         const hehe=setTimeout(()=>{
             const randomIndex = Math.floor(Math.random() * 3);
             module.exports.wordChoosen({roomId,io,socket:currentPlayer.id,padam:words[randomIndex]})
-        },10000);
+        },30000);
         allTimers.set(roomId,hehe);
     }
 };
