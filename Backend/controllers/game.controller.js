@@ -119,8 +119,9 @@ module.exports.wordChoosen=({roomId,padam,io})=>{
             room.word=padam.toLowerCase();
             const dashed=dashIt(padam);
             const {word,...rooma}=room;
-            io.to(currentPlayer.id).emit("setWord",{data:room.word,room:rooma});
-            io.except(pam.id).to(roomId).emit("setWord",{data:dashed,room:rooma});
+            const target=Date.now()+room.settings.drawTime*1000;
+            io.to(currentPlayer.id).emit("setWord",{data:room.word,room:rooma,timer:target});
+            io.except(pam.id).to(roomId).emit("setWord",{data:dashed,room:rooma,timer:target});
             const bro=setTimeout(()=>{
                     room.presentState.currentPlayer++;
                     startTurn(roomId,io);
@@ -129,8 +130,20 @@ module.exports.wordChoosen=({roomId,padam,io})=>{
     }
 }
 const turnEnded=(roomId,io)=>{
-
-}
+    const room=Territories.getRooms[roomId];
+    if(!room)return;
+    if(room.presentState.currentPlayer+1>Object.keys(room.users).length){
+        room.presentState.currentRound++;
+        room.presentState.currentPlayer=0;
+    }
+    if(room.presentState.currentRound>room.settings.rounds){
+        io.to(roomId).emit("GameEnded",{data:"MG"});
+        return;
+    }
+    room.word="";
+    room.presentState.gameState="choosing";
+    io.to(roomId).emit("TurnEnded",{changeSettings});
+};
 const startTurn=(roomId,io)=>{
     const room=Territories.getRooms[roomId];
     if(!room){
@@ -138,17 +151,10 @@ const startTurn=(roomId,io)=>{
     }
     else if(Object.keys(room.users).length<2)return;
     else{  
-        if(room.presentState.currentPlayer+1>Object.keys(room.users).length){
-            room.presentState.currentRound++;
-            room.presentState.currentPlayer=0;
-        }
-        if(room.presentState.currentRound>room.settings.rounds){
-            io.to(roomId).emit("GameEnded",{data:"MG"});
-        }
         const currentPlayer=getCurrentPlayer(roomId,room.presentState.currentPlayer);
         const words=getThreeWords();
         const targetTime=Date.now()+30000
-        io.to(currentPlayer.id).emit("Enchuko",{data:words});
+        io.to(currentPlayer.id).emit("Enchuko",{data:words,timer:targetTime});
         room.presentState.gameState="choosing";
         const {word,...rooma}=room;
         io.to(roomId).emit("settingsChange",{room:rooma});
@@ -162,11 +168,11 @@ const startTurn=(roomId,io)=>{
 
 module.exports.guess=({roomId,socket,padam,io})=>{
     const room=Territories.getRooms[roomId];
-    const currentPlayer=getCurrentPlayer(roomId,room.presentState.currentPlayer);
-    if(!room){
+        if(!room){
         socket.emit("error",{msg:"Room is not found",status:false,thing:"Room Error"});
     }
-    else if(room.presentState.gameState==="drawing"&&socket.id===currentPlayer.id){
+    const currentPlayer=getCurrentPlayer(roomId,room.presentState.currentPlayer)
+    if(room.presentState.gameState==="drawing"&&socket.id===currentPlayer.id){
         socket.emit("error",{msg:"Room is not found",status:false,thing:"Room Error"});
     }
     else{

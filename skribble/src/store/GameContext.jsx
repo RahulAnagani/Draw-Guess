@@ -30,6 +30,7 @@ const GameContextWrapper=({children})=>{
                 socket.on("Enchuko",(data)=>{
                     dis(roomActions.myTurn());
                     dis(wordActions.addWords(data.data));
+                    dis(roomActions.setTimer({presence:true,timer:data.timer,type:"select"}));
                 });
                 socket.on("NaaIshtam",(data)=>{
                     dis(wordActions.removeWords());
@@ -40,6 +41,7 @@ const GameContextWrapper=({children})=>{
                     console.log(data);
                     dis(roomActions.setUsers(data.room));
                     dis(roomActions.setWord(data.data));
+                    dis(roomActions.setTimer({presence:true,timer:data.timer,type:"drawing"}))
                 });
                 socket.on("gameStarted",(data)=>{
                     dis(roomActions.setUsers(data.room));

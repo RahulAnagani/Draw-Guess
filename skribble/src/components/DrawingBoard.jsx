@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { roomActions } from "../store/room";
 import Select from "./Select";
 import Inbox from "./Inbox";
+import Timer from "./Timer";
 
 const DrawingBoard = () => {
     const dis = useDispatch();
@@ -34,7 +35,13 @@ const DrawingBoard = () => {
         }
     },[socket])
     const getCurrentPlayer=()=>{
-        return room.room?.users[Object.keys(room.room.users)[room.room.presentState.currentPlayer]];
+        try{
+
+            return room.room?.users[Object.keys(room.room?.users)[room.room?.presentState.currentPlayer]];
+        }
+        catch(E){
+            return 123;
+        }
     }
     const getPosition = (evt) => {
         const rect = canvasRef.current.getBoundingClientRect();
@@ -132,8 +139,13 @@ const DrawingBoard = () => {
     console.log(room);
     return (
         <>
-        {words.length>0?<Select array={words}></Select>:<></>}<div className=" w-screen h-screen flex justify-center items-center">
-            <div className=" h-full gap-5 flex flex-col items-center justify-center w-[60%] ">
+        {words.length>0?<Select array={words}></Select>:<></>}
+        <div className=" w-screen h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex justify-center items-center">
+            <div className="w-[85%] h-[85%] rounded bg-white/10 backdrop-blur-3xl border border-white/20 justify-between flex">
+            <div className=" h-full  gap-5 flex flex-col items-center justify-center w-[60%] ">
+                <div className="w-full flex justify-start ml-2 ">
+                    {room.timer.isPresent&&room.timer.type==='drawing'&&<Timer></Timer>}
+                </div>
                 <div className="flex gap-0.5 items-center relative justify-center">
                 {
                     room.word.split(" ").map((f,i)=>{
@@ -180,15 +192,16 @@ const DrawingBoard = () => {
             <button onClick={clearCanvas}>
                 <FaTrash className="mr-2 cursor-pointer" />
             </button>
-            <select placeholder="Pick your brush size" className="bg-gray-400 cursor-pointer outline-0 rounded" onChange={(e)=>setLineWidth(e.target.value)}>
+            <select placeholder="Pick your brush size" className="bg-white/10 backdrop-blur-2xl border border-white/10 p-2 cursor-pointer outline-0 rounded" onChange={(e)=>setLineWidth(e.target.value)}>
                 <option className="text" value={3}>Light
                 </option>
                 <option value={15} className="text-xl">Medium</option>
                 <option value={70} className="text-2xl">Bold</option>
             </select>
             </div>
-                    </div>
+            </div>
             <Inbox event={"Guess"} socket={socket} inbox={inbox}></Inbox>
+            </div>
         </div>
     </>
     );

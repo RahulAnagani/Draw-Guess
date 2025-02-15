@@ -23,7 +23,7 @@ button{
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f0f0f0; /* Scrollbar track background */
+    background: rgba(255, 255, 255, 0.3);/* Scrollbar track background */
     border-radius: 4px;
 }
 

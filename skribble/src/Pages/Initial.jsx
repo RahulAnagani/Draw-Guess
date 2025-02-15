@@ -64,7 +64,7 @@ const CreateRoom=()=>{
              <form onSubmit={(e)=>{
                 e.preventDefault()
             }}>
-            <div className="border flex flex-col gap-5 border-transparent bg-gradient-to-br from-yellow-200 to-pink-400 rounded-lg text-white p-10">
+            <div className="border flex flex-col gap-5 border-transparent bg-gradient-to-br from-yellow-200/50 to-pink-400/50 rounded-lg text-white p-10">
             <label className="flex flex-col gap-1">
             Enter Your Name
             <input value={name} onChange={(e)=>setName(e.target.value)} required className="bg-gray-100 placeholder:text-gray-600 text-black p-2 rounded outline-0" placeholder="Enter your name"></input>

@@ -1,7 +1,7 @@
 import {createSlice} from "@reduxjs/toolkit"
 const roomSlice=createSlice({
     name:"Room",
-    initialState:{room:{},roomId:"",profile:{},word:"",myTurn:false},
+    initialState:{room:{},roomId:"",profile:{},word:"",myTurn:false,timer:{isPresent:false,target:null,type:null}},
     reducers:{
         setRoom:(state,action)=>{
             console.log(action.payload)
@@ -18,6 +18,9 @@ const roomSlice=createSlice({
         },
         myTurn:(state,action)=>{
             return {...state,myTurn:!state.myTurn}
+        },
+        setTimer:(state,action)=>{
+            return {...state,timer:{isPresent:(action.payload.presence),target:action.payload.timer,type:action.payload.type}}
         }
     }
 })
