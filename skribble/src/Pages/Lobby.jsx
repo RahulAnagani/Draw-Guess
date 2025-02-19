@@ -26,7 +26,6 @@ const Lobby=()=>{
     useEffect(()=>{
         if(socket){
             socket.on("recieveMessage",(salaar)=>{
-                console.log(salaar)
                 setInbox((prevInbox) => [...prevInbox, salaar]);
             });
         };

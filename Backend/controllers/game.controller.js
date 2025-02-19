@@ -123,26 +123,38 @@ module.exports.wordChoosen=({roomId,padam,io})=>{
             io.to(currentPlayer.id).emit("setWord",{data:room.word,room:rooma,timer:target});
             io.except(pam.id).to(roomId).emit("setWord",{data:dashed,room:rooma,timer:target});
             const bro=setTimeout(()=>{
-                    room.presentState.currentPlayer++;
-                    startTurn(roomId,io);
+                    turnEnded(roomId,io);
             },room.settings.drawTime*1000);
         }
     }
 }
 const turnEnded=(roomId,io)=>{
-    const room=Territories.getRooms[roomId];
+    const room=givePoints(roomId);
     if(!room)return;
-    if(room.presentState.currentPlayer+1>Object.keys(room.users).length){
-        room.presentState.currentRound++;
-        room.presentState.currentPlayer=0;
-    }
-    if(room.presentState.currentRound>room.settings.rounds){
-        io.to(roomId).emit("GameEnded",{data:"MG"});
-        return;
-    }
-    room.word="";
-    room.presentState.gameState="choosing";
-    io.to(roomId).emit("TurnEnded",{changeSettings});
+    else{
+        io.to(roomId).emit("points",{room:room});
+        const timer=setTimeout(()=>{
+            if(room.presentState.currentPlayer+1>=Object.keys(room.users).length){
+                room.presentState.currentRound++;
+                room.presentState.currentPlayer=0;
+                room.word="";
+                room.presentState.gameState="choosing";
+                io.to(roomId).emit("TurnEnded",{room:room});
+                if(room.presentState.currentRound>room.settings.rounds){
+                    io.to(roomId).emit("GameEnded",{data:"MG"});
+                }
+                else startTurn(roomId,io);
+        }
+
+            else{
+                room.word="";
+                room.presentState.gameState="choosing";
+                room.presentState.currentPlayer++;
+                io.to(roomId).emit("TurnEnded",{room:room});
+                startTurn(roomId,io);
+            }
+        },5000);
+}
 };
 const startTurn=(roomId,io)=>{
     const room=Territories.getRooms[roomId];
@@ -153,6 +165,7 @@ const startTurn=(roomId,io)=>{
     else{  
         const currentPlayer=getCurrentPlayer(roomId,room.presentState.currentPlayer);
         const words=getThreeWords();
+        Object.values(room.users).forEach((e,i)=>e.guessed=false);
         const targetTime=Date.now()+30000
         io.to(currentPlayer.id).emit("Enchuko",{data:words,timer:targetTime});
         room.presentState.gameState="choosing";
@@ -176,12 +189,29 @@ module.exports.guess=({roomId,socket,padam,io})=>{
         socket.emit("error",{msg:"Room is not found",status:false,thing:"Room Error"});
     }
     else{
-        if(room.word===padam){
+        if(room.word===padam&&!room.users[socket.id].guessed){
             room.users[socket.id].guessed=true;
+            room.users[socket.id].guessedAt=new Date();
             io.to(roomId).emit("Cheppadu",{sentBy:room.users[socket.id].userName,guess:true,msg:""});
         }
         else{
+            if(!room.users[socket.id].guessed)
             io.to(roomId).emit("CheppalaniAnukunnadu",{sentBy:room.users[socket.id].userName,msg:padam,guess:false});
         }
+    }
+}
+
+
+const givePoints=(roomId)=>{
+    const room=Territories.getRooms[roomId];
+    if(!room)return;
+    else{
+        const points=[100,90,70,60,50,40,30,20,10,5];
+        const guessed=(Object.values(room.users)).filter(obj=>obj.guessed);
+        guessed.sort((a, b) => a.guessedAt - b.guessedAt);
+        guessed.forEach((e,i)=>{
+            e.score+=points[i];
+        })
+        return room;
     }
 }

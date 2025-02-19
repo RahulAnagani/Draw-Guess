@@ -23,6 +23,17 @@ const GameContextWrapper=({children})=>{
                     notify(data.thing)
                     console.log(data);
                 });
+                socket.on("TurnEnded",(data)=>{
+                    console.log(data);
+                    dis(roomActions.setUsers(data.room))
+                    dis(roomActions.setTimer({presence:false,timer:null,type:null}));
+                    dis(roomActions.setWord(""));
+                    dis(roomActions.setBoard(false));
+                })
+                socket.on("points",(data)=>{
+                    dis(roomActions.setBoard(true));
+                    dis(roomActions.setUsers(data.room));
+                });
                 socket.on("settingsChange",(data)=>{
                     console.log(data.room.settings);
                     dis(roomActions.setUsers(data.room))
@@ -57,6 +68,8 @@ const GameContextWrapper=({children})=>{
                     socket.off("Enchuko");
                     socket.off("NaaIshtam");
                     socket.off("gameStarted");
+                    socket.off("TurnEnded");
+                    socket.off("points");
                 }
             };
         }, [socket]);

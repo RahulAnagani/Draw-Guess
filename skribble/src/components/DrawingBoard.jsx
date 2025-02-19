@@ -6,6 +6,7 @@ import { roomActions } from "../store/room";
 import Select from "./Select";
 import Inbox from "./Inbox";
 import Timer from "./Timer";
+import Points from "./Points";
 
 const DrawingBoard = () => {
     const dis = useDispatch();
@@ -36,10 +37,11 @@ const DrawingBoard = () => {
     },[socket])
     const getCurrentPlayer=()=>{
         try{
-
+            console.log(room.room?.users[Object.keys(room.room?.users)[room.room?.presentState.currentPlayer]]);
             return room.room?.users[Object.keys(room.room?.users)[room.room?.presentState.currentPlayer]];
         }
         catch(E){
+            console.log(E);
             return 123;
         }
     }
@@ -135,11 +137,11 @@ const DrawingBoard = () => {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
-
     console.log(room);
     return (
         <>
         {words.length>0?<Select array={words}></Select>:<></>}
+        {room.PointsBoard?<Points></Points>:<></>}
         <div className=" w-screen h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex justify-center items-center">
             <div className="w-[85%] h-[85%] rounded bg-white/10 backdrop-blur-3xl border border-white/20 justify-between flex">
             <div className=" h-full  gap-5 flex flex-col items-center justify-center w-[60%] ">
@@ -168,7 +170,7 @@ const DrawingBoard = () => {
                 </div>
             <div className="relative">
                 { 
-                (!(room.profile.id===getCurrentPlayer().id))&&room.room?.presentState?.gameState==="choosing"?
+                (!(room.profile?.id===getCurrentPlayer().id))&&room.room?.presentState?.gameState==="choosing"?
                 <h1 className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2"><span className="font-extrabold">{getCurrentPlayer().userName}</span> is choosing a word</h1>:<></>
                 }
             <canvas
