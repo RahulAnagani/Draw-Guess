@@ -18,7 +18,7 @@ const DrawingBoard = () => {
     const words=useSelector(store=>store.words);
     const [inbox,setInbox]=useState([])
     const [lineWidth,setLineWidth]=useState(3);
-    console.log(room)
+    
     useEffect(()=>{
         if(socket){
             socket.on("Cheppadu",(salaar)=>{
@@ -37,7 +37,6 @@ const DrawingBoard = () => {
     },[socket])
     const getCurrentPlayer=()=>{
         try{
-            console.log(room.room?.users[Object.keys(room.room?.users)[room.room?.presentState.currentPlayer]]);
             return room.room?.users[Object.keys(room.room?.users)[room.room?.presentState.currentPlayer]];
         }
         catch(E){
@@ -137,7 +136,7 @@ const DrawingBoard = () => {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
-    console.log(room);
+
     return (
         <>
         {words.length>0?<Select array={words}></Select>:<></>}

@@ -138,14 +138,14 @@ const turnEnded=(roomId,io)=>{
                 room.presentState.currentRound++;
                 room.presentState.currentPlayer=0;
                 room.word="";
-                room.presentState.gameState="choosing";
-                io.to(roomId).emit("TurnEnded",{room:room});
                 if(room.presentState.currentRound>room.settings.rounds){
-                    io.to(roomId).emit("GameEnded",{data:"MG"});
+                    io.to(roomId).emit("GameEnded",{room:room});
                 }
-                else startTurn(roomId,io);
+                else{
+                    io.to(roomId).emit("TurnEnded",{room:room});
+                    startTurn(roomId,io);
+                }
         }
-
             else{
                 room.word="";
                 room.presentState.gameState="choosing";
@@ -162,11 +162,14 @@ const startTurn=(roomId,io)=>{
         return;
     }
     else if(Object.keys(room.users).length<2)return;
+    else if(room.presentState.currentRound>room.settings.rounds){
+        return;
+    }
     else{  
         const currentPlayer=getCurrentPlayer(roomId,room.presentState.currentPlayer);
         const words=getThreeWords();
         Object.values(room.users).forEach((e,i)=>e.guessed=false);
-        const targetTime=Date.now()+30000
+        const targetTime=Date.now()+10000
         io.to(currentPlayer.id).emit("Enchuko",{data:words,timer:targetTime});
         room.presentState.gameState="choosing";
         const {word,...rooma}=room;
@@ -174,7 +177,7 @@ const startTurn=(roomId,io)=>{
         const hehe=setTimeout(()=>{
             const randomIndex = Math.floor(Math.random() * 3);
             module.exports.wordChoosen({roomId,io,socket:currentPlayer.id,padam:words[randomIndex]})
-        },30000);
+        },10000);
         allTimers.set(roomId,hehe);
     }
 };

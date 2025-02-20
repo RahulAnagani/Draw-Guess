@@ -16,15 +16,12 @@ const GameContextWrapper=({children})=>{
                     dis(roomActions.setUsers(data.room));
                 });
                 socket.on("userLeft", (data) => {
-                    console.log(data.users);
                     dis(roomActions.setUsers(data.room));
                 });
                 socket.on("error",(data)=>{
                     notify(data.thing)
-                    console.log(data);
                 });
                 socket.on("TurnEnded",(data)=>{
-                    console.log(data);
                     dis(roomActions.setUsers(data.room))
                     dis(roomActions.setTimer({presence:false,timer:null,type:null}));
                     dis(roomActions.setWord(""));
@@ -35,7 +32,6 @@ const GameContextWrapper=({children})=>{
                     dis(roomActions.setUsers(data.room));
                 });
                 socket.on("settingsChange",(data)=>{
-                    console.log(data.room.settings);
                     dis(roomActions.setUsers(data.room))
                 });
                 socket.on("Enchuko",(data)=>{
@@ -49,7 +45,6 @@ const GameContextWrapper=({children})=>{
                 });
                 socket.on("setWord",(data)=>{
                     dis(wordActions.removeWords());
-                    console.log(data);
                     dis(roomActions.setUsers(data.room));
                     dis(roomActions.setWord(data.data));
                     dis(roomActions.setTimer({presence:true,timer:data.timer,type:"drawing"}))
@@ -58,7 +53,11 @@ const GameContextWrapper=({children})=>{
                     dis(roomActions.setUsers(data.room));
                     nav("/AataAarambam");
                 });
-
+                socket.on("GameEnded",(data)=>{
+                    dis(roomActions.setBoard(true));
+                    dis(roomActions.setUsers(data.room));
+                    
+                })
             }
             return () => {
                 if (socket) {
@@ -70,6 +69,7 @@ const GameContextWrapper=({children})=>{
                     socket.off("gameStarted");
                     socket.off("TurnEnded");
                     socket.off("points");
+                    socket.off("GameEnded")
                 }
             };
         }, [socket]);
