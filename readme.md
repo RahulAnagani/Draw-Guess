@@ -1,4 +1,4 @@
-# Skribble - Multiplayer Drawing & Guessing Game
+# Draw-Guess - Multiplayer Drawing & Guessing Game
 
 A real-time multiplayer game where players take turns drawing and guessing words.
 
@@ -22,17 +22,17 @@ A real-time multiplayer game where players take turns drawing and guessing words
 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/skribble.git
-cd skribble
+cd Draw-Guess
 ```
 
 2. Install dependencies:
 ```bash
 # Install backend dependencies
-cd Backend
+cd Server
 npm install
 
 # Install frontend dependencies
-cd ../skribble
+cd ../Client
 npm install
 ```
 
@@ -52,13 +52,13 @@ VITE_API_URL=http://localhost:7040
 
 1. Start the backend server:
 ```bash
-cd Backend
-npm start
+cd Server
+npx nodemon
 ```
 
 2. In a new terminal, start the frontend:
 ```bash
-cd skribble
+cd Client
 npm run dev
 ```
 
@@ -79,9 +79,7 @@ npm run dev
 ## Available Scripts
 
 ### Backend
-- `npm start`: Starts the server
+- `npx nodemon`: Starts the server
 
 ### Frontend
 - `npm run dev`: Starts development server
-- `npm run build`: Builds for production
-- `npm run preview`: Previews production build
